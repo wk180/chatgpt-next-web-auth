@@ -28,6 +28,7 @@ function parseApiKey(bearToken: string) {
 }
 
 export async function auth(req: NextRequest) {
+  const serverConfig = getServerSideConfig();
   const session = await getServerSession(authOptions);
   console.log("[User IP] ", getIP(req));
   console.log("[Time] ", new Date().toLocaleString());
@@ -38,7 +39,8 @@ export async function auth(req: NextRequest) {
       msg: "未登录",
     };
   }
-
+  const apiKey = serverConfig.apiKey;
+  req.headers.set("Authorization", `Bearer ${apiKey}`);
   return {
     error: false,
   };
