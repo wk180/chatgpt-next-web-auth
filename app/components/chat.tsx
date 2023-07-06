@@ -7,6 +7,8 @@ import React, {
   useCallback,
 } from "react";
 
+import { signIn, signOut, useSession } from "next-auth/react";
+
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
 import RenameIcon from "../icons/rename.svg";
@@ -383,19 +385,6 @@ export function ChatActions(props: {
   const couldStop = ChatControllerPool.hasPending();
   const stopAll = () => ChatControllerPool.stopAll();
 
-  // switch model
-  const currentModel = chatStore.currentSession().mask.modelConfig.model;
-  function nextModel() {
-    const models = config.models.filter((m) => m.available).map((m) => m.name);
-    const modelIndex = models.indexOf(currentModel);
-    const nextIndex = (modelIndex + 1) % models.length;
-    const nextModel = models[nextIndex];
-    chatStore.updateCurrentSession((session) => {
-      session.mask.modelConfig.model = nextModel as ModelType;
-      session.mask.syncGlobalConfig = false;
-    });
-  }
-
   return (
     <div className={styles["chat-input-actions"]}>
       {couldStop && (
@@ -464,12 +453,6 @@ export function ChatActions(props: {
           });
         }}
       />
-
-      <ChatAction
-        onClick={nextModel}
-        text={currentModel}
-        icon={<RobotIcon />}
-      />
     </div>
   );
 }
@@ -495,6 +478,8 @@ export function Chat() {
   const [hitBottom, setHitBottom] = useState(true);
   const isMobileScreen = useMobileScreen();
   const navigate = useNavigate();
+
+  const { data: authSession, status } = useSession();
 
   const onChatBodyScroll = (e: HTMLElement) => {
     const isTouchBottom = e.scrollTop + e.clientHeight >= e.scrollHeight - 10;
@@ -733,7 +718,7 @@ export function Chat() {
     session.messages.at(0)?.content !== BOT_HELLO.content
   ) {
     const copiedHello = Object.assign({}, BOT_HELLO);
-    if (!accessStore.isAuthorized()) {
+    if (!authSession) {
       copiedHello.content = Locale.Error.Unauthorized;
     }
     context.push(copiedHello);
@@ -894,9 +879,8 @@ export function Chat() {
           const shouldShowClearContextDivider = i === clearContextIndex - 1;
 
           return (
-            <>
+            <React.Fragment key={i}>
               <div
-                key={i}
                 className={
                   isUser ? styles["chat-message-user"] : styles["chat-message"]
                 }
@@ -1005,7 +989,7 @@ export function Chat() {
                 </div>
               </div>
               {shouldShowClearContextDivider && <ClearContextDivider />}
-            </>
+            </React.Fragment>
           );
         })}
       </div>

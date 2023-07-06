@@ -8,6 +8,9 @@ import Locale from "../locales";
 
 import BotIcon from "../icons/bot.svg";
 
+import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
+
 export function AuthPage() {
   const navigate = useNavigate();
   const access = useAccessStore();
@@ -22,16 +25,6 @@ export function AuthPage() {
 
       <div className={styles["auth-title"]}>{Locale.Auth.Title}</div>
       <div className={styles["auth-tips"]}>{Locale.Auth.Tips}</div>
-
-      <input
-        className={styles["auth-input"]}
-        type="password"
-        placeholder={Locale.Auth.Input}
-        value={access.accessCode}
-        onChange={(e) => {
-          access.updateCode(e.currentTarget.value);
-        }}
-      />
 
       <div className={styles["auth-actions"]}>
         <IconButton
