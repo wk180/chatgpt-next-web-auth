@@ -668,12 +668,6 @@ export function Settings() {
         )}
 
         <DangerItems />
-
-        <List>
-          <ListItem
-            title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
-          ></ListItem>
-        </List>
       </div>
     </ErrorBoundary>
   );
